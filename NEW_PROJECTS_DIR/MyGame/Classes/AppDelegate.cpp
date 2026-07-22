@@ -82,7 +82,7 @@ bool AppDelegate::applicationDidFinishLaunching()
         director->setOpenGLView(glview);
     }
 
-    glview->setFrameSize(smallResolutionSize.width, smallResolutionSize.height);
+    glview->setFrameSize(designResolutionSize.width, designResolutionSize.height);
 
     // turn on display FPS
     director->setDisplayStats(true);

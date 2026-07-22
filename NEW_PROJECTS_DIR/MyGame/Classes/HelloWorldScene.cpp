@@ -110,49 +110,49 @@ bool HelloWorld::init()
     }
 
     // add "HelloWorld" splash screen"
-    auto sprite = Sprite::create("HelloWorld.png");
-    if (sprite == nullptr)
-    {
-        problemLoading("'HelloWorld.png'");
-    }
-    else
-    {
-        auto size = sprite->getContentSize();
-        log("HelloWorld sprite size: %f x %f", size.width, size.height);
-        auto visibleSize = Director::getInstance()->getVisibleSize();
-        // position the sprite on the center of the screen
-        sprite->setPosition(Vec2(size.width / 2 + origin.x, visibleSize.height - size.height / 2 + origin.y));
-        auto origin = Director::getInstance()->getVisibleOrigin();
-        log("Visible origin: %f, %f", origin.x, origin.y);
+    // auto sprite = Sprite::create("HelloWorld.png");
+    // if (sprite == nullptr)
+    // {
+    //     problemLoading("'HelloWorld.png'");
+    // }
+    // else
+    // {
+    //     auto size = sprite->getContentSize();
+    //     log("HelloWorld sprite size: %f x %f", size.width, size.height);
+    //     auto visibleSize = Director::getInstance()->getVisibleSize();
+    //     // position the sprite on the center of the screen
+    //     sprite->setPosition(Vec2(size.width / 2 + origin.x, visibleSize.height - size.height / 2 + origin.y));
+    //     auto origin = Director::getInstance()->getVisibleOrigin();
+    //     log("Visible origin: %f, %f", origin.x, origin.y);
 
-        // sprite->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
-        //    sprite->setPosition(Vec2(0,0));
-        sprite->setTag(100);
-        // add the sprite as a child to this layer
-        this->addChild(sprite, 0);
-        auto spriteSize = sprite->getContentSize();
-        log("Sprite size: %f x %f", spriteSize.width, spriteSize.height);
+    //     // sprite->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
+    //     //    sprite->setPosition(Vec2(0,0));
+    //     sprite->setTag(100);
+    //     // add the sprite as a child to this layer
+    //     this->addChild(sprite, 0);
+    //     auto spriteSize = sprite->getContentSize();
+    //     log("Sprite size: %f x %f", spriteSize.width, spriteSize.height);
 
-        // auto actualSize sprite->getBoundingBox().size;
-        // log("Sprite actual size: %f x %f", actualSize.width, actualSize.height);
-    }
-    auto sprite2 = Sprite::create("HelloWorld.png");
-    if (sprite2 == nullptr)
-    {
-        problemLoading("'HelloWorld.png'");
-    }
-    else
-    {
-        auto size = sprite2->getContentSize();
-        log("HelloWorld sprite size: %f x %f", size.width, size.height);
-        auto visibleSize = Director::getInstance()->getVisibleSize();
-        // position the sprite on the center of the screen
-        sprite2->setPosition(Vec2(size.width + size.width / 2 + origin.x, visibleSize.height - size.height / 2 + origin.y));
-        // sprite2->setTag(101);
-        // add the sprite as a child to this layer
-        this->addChild(sprite2, 0);
-    }
-    log("sprite2 position: %f, %f", sprite2->getPositionX(), sprite2->getPositionY());
+    //     // auto actualSize sprite->getBoundingBox().size;
+    //     // log("Sprite actual size: %f x %f", actualSize.width, actualSize.height);
+    // }
+    // auto sprite2 = Sprite::create("HelloWorld.png");
+    // if (sprite2 == nullptr)
+    // {
+    //     problemLoading("'HelloWorld.png'");
+    // }
+    // else
+    // {
+    //     auto size = sprite2->getContentSize();
+    //     log("HelloWorld sprite size: %f x %f", size.width, size.height);
+    //     auto visibleSize = Director::getInstance()->getVisibleSize();
+    //     // position the sprite on the center of the screen
+    //     sprite2->setPosition(Vec2(size.width + size.width / 2 + origin.x, visibleSize.height - size.height / 2 + origin.y));
+    //     // sprite2->setTag(101);
+    //     // add the sprite as a child to this layer
+    //     this->addChild(sprite2, 0);
+    // }
+    // log("sprite2 position: %f, %f", sprite2->getPositionX(), sprite2->getPositionY());
 
     auto sprite80 = Sprite::create("80.png");
     if (sprite80 == nullptr)
@@ -218,10 +218,12 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
     //     }
     // }
 
-    int MovementX = 300;
-    int MovementY = 300;
-    int ViewRangeX = 10;
-    int ViewRangeY = 10;
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+
+    int MovementX = 330;
+    int MovementY = 330;
+    int ViewRangeX = 30;
+    int ViewRangeY = 30;
     int startX = MovementX - ViewRangeX;
     int endX = MovementX + ViewRangeX;
     int startY = MovementY - ViewRangeY;
@@ -230,16 +232,31 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
 
     int Height = mapReader->Height;
     int Width = mapReader->Width;
+    int OffSetX = visibleSize.width / 2 /48;
+    int OffSetY = visibleSize.height / 2 /32;
+    int CellWidth = 48;
+    int CellHeight = 32;
+
+    // Create drawXCache vector
+    std::vector<int> drawXCache(endX - startX + 1);
+    for (int xi = startX; xi <= endX; xi++)
+        drawXCache[xi - startX] = (xi - MovementX + OffSetX) * CellWidth - OffSetX + MovementX;
+
+    // Create drawYCache vector
+    std::vector<int> drawYCache(endYExtended - startY + 1);
+    for (int yi = startY; yi <= endYExtended; yi++)
+        drawYCache[yi - startY] = (yi - MovementY + OffSetY) * CellHeight + MovementY;
 
     // auto M2CellInfo = mapReader->MapCells;
     for (int y = startY; y <= endYExtended; y++)
     {
         if (y <= 0)
             continue;
-        if (y >= Height)
+        if (y >= Height)    
             break;
 
-        // int drawY = drawYCache[y - startY];
+         int drawY = drawYCache[y - startY];
+         log("Drawing drawY=%d", drawY);
 
         for (int x = startX; x <= endX; x++)
         {
@@ -248,7 +265,8 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
             if (x >= Width)
                 break;
 
-            // int drawX = drawXCache[x - startX];
+            int drawX = drawXCache[x - startX];
+            log("Drawing cell at (%d, %d) with drawX=%d, drawY=%d", x, y, drawX, drawY);
             auto cell = mapReader->MapCells[x][y];
 
             // Back
@@ -259,9 +277,9 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
                 {
                     int index = (cell->BackImage & 0x1FFFFFFF) - 1;
                     // Console.WriteLine($ "[{x},{y}]lib BackIndex:{cell.BackIndex}");
-                    log("Cell (%d, %d): BackImage=%d, BackIndex=%d", x, y, cell->BackImage, cell->BackIndex);
+                   // log("Cell (%d, %d): BackImage=%d, BackIndex=%d", x, y, cell->BackImage, cell->BackIndex);
                     auto lib = libraries->MapLibs[cell->BackIndex];
-                    lib->draw(index, x, y);
+                    lib->draw(index, drawX, drawY);
                 }
             }
 
@@ -270,7 +288,7 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
             if (midIndex >= 0 && cell->MiddleIndex != -1)
             {
                 // Console.WriteLine($ "[{x},{y}]lib MiddleIndex:{cell.MiddleIndex}");
-                log("Cell (%d, %d): MiddleImage=%d, MiddleIndex=%d", x, y, cell->MiddleImage, cell->MiddleIndex);
+               // log("Cell (%d, %d): MiddleImage=%d, MiddleIndex=%d", x, y, cell->MiddleImage, cell->MiddleIndex);
                 // var lib = Libraries.MapLibs[cell.MiddleIndex];
                 // Size s = lib.GetSize(midIndex);
                 // if ((s.Width == CellWidth && s.Height == CellHeight) ||
@@ -288,7 +306,7 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
                 if (fileIndex != -1 && fileIndex != 200)
                 {
                     // Console.WriteLine($ "[{x},{y}] lib fileIndex:{fileIndex}, frontIndex:{frontIndex}");
-                    log("Cell (%d, %d): fileIndex=%d, frontIndex=%d", x, y, fileIndex, frontIndex);
+                   // log("Cell (%d, %d): fileIndex=%d, frontIndex=%d", x, y, fileIndex, frontIndex);
                     // var lib = Libraries.MapLibs[fileIndex];
                     // Size s = lib.GetSize(frontIndex);
 

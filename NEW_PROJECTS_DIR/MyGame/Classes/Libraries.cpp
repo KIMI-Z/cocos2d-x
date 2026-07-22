@@ -55,7 +55,7 @@ std::string Settings::TransformEffectPath = Settings::DataPath + "TransformEffec
 std::string Settings::TransformWeaponEffectPath = Settings::DataPath + "TransformWeaponEffect/";
 int Settings::ScreenWidth = 1024;
 int Settings::ScreenHeight = 768;
-int Settings::CleanDelay = 5000;
+int Settings::CleanDelay = 5000 * 10;
 
 // ==================== TextureManager实现 ====================
 TextureManager *TextureManager::getInstance()
@@ -322,12 +322,14 @@ MLibrary::MLibrary(const std::string &filename)
     auto fileUtils = cocos2d::FileUtils::getInstance();
     // 1. 获取文件的完整路径（考虑到资源搜索路径）
     std::string fullPath = fileUtils->fullPathForFilename(_fileName);
-    log("Attempting to load library file: %s", fullPath.c_str());
-    if(fullPath.empty() || !fs::exists(fullPath))
+    // log("Attempting to load library file: %s", fullPath.c_str());
+    if (fullPath.empty() || !fs::exists(fullPath))
     {
-        log("Library file not found: %s", fullPath.c_str());
+        //  log("Library file not found: %s", fullPath.c_str());
         return;
-    }else{
+    }
+    else
+    {
         _fileName = fullPath;
     }
 }
@@ -352,9 +354,13 @@ void MLibrary::Initialize()
 
     if (!fs::exists(_fileName))
     {
-        log("Library file not found: %s", _fileName.c_str());
+        // log("Library file not found: %s", _fileName.c_str());
         return;
     }
+
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    Settings::ScreenWidth = static_cast<int>(visibleSize.width);
+    Settings::ScreenHeight = static_cast<int>(visibleSize.height);
 
     try
     {
@@ -380,7 +386,7 @@ void MLibrary::Initialize()
         }
         _images.resize(_count, nullptr);
         _indexList.resize(_count);
-        log("Library file not found: %s, count: %d", _fileName.c_str(), _count);
+        // log("Library file not found: %s, count: %d", _fileName.c_str(), _count);
 
         for (int i = 0; i < _count; i++)
         {
@@ -404,7 +410,7 @@ void MLibrary::Initialize()
 
 bool MLibrary::checkImage(int index)
 {
-    log("checkImage (%d)", index);
+    // log("checkImage (%d)", index);
     if (!_initialized)
         Initialize();
 
@@ -461,11 +467,11 @@ void MLibrary::draw(int index, PointLib point, Color colour, bool offSet)
 {
     if (!checkImage(index))
     {
-        log("checkImage failed (%d)", index);
+        // log("checkImage failed (%d)", index);
         return;
     }
 
-    log("checkImage success (%d)", index);
+    // log("checkImage success (%d)", index);
     MImage *mi = _images[index];
     if (offSet)
         point.offset(mi->X, mi->Y);
