@@ -1,0 +1,328 @@
+/****************************************************************************
+ Copyright (c) 2017-2018 Xiamen Yaji Software Co., Ltd.
+
+ http://www.cocos2d-x.org
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+ ****************************************************************************/
+
+#include "HelloWorldScene.h"
+#include "MapCellInfo.h"
+#include "Libraries.h"
+USING_NS_CC;
+
+Scene *HelloWorld::createScene()
+{
+    return HelloWorld::create();
+}
+
+// Print useful error message instead of segfaulting when files are not there.
+static void problemLoading(const char *filename)
+{
+    printf("Error while loading: %s\n", filename);
+    printf("Depending on how you compiled you might have to add 'Resources/' in front of filenames in HelloWorldScene.cpp\n");
+}
+
+// on "init" you need to initialize your instance
+bool HelloWorld::init()
+{
+
+    log("HelloWorld::init() is called!");
+    // std::cout << "HelloWorld::init() is called! by c++" << std::endl;
+    // printf("HelloWorld::init() is called!");
+
+    //////////////////////////////
+    // 1. super init first
+    if (!Scene::init())
+    {
+        return false;
+    }
+
+    auto visibleSize = Director::getInstance()->getVisibleSize();
+    Vec2 origin = Director::getInstance()->getVisibleOrigin();
+
+    /////////////////////////////
+    // 2. add a menu item with "X" image, which is clicked to quit the program
+    //    you may modify it.
+
+    // add a "close" icon to exit the progress. it's an autorelease object
+    auto closeItem = MenuItemImage::create(
+        "CloseNormal.png",
+        "CloseSelected.png",
+        CC_CALLBACK_1(HelloWorld::menuCloseCallback, this));
+
+    if (closeItem == nullptr ||
+        closeItem->getContentSize().width <= 0 ||
+        closeItem->getContentSize().height <= 0)
+    {
+        problemLoading("'CloseNormal.png' and 'CloseSelected.png'");
+    }
+    else
+    {
+        float x = origin.x + visibleSize.width - closeItem->getContentSize().width / 2;
+        float y = origin.y + closeItem->getContentSize().height / 2;
+        closeItem->setTag(101);
+        closeItem->setPosition(Vec2(x, y));
+    }
+
+    // create menu, it's an autorelease object
+    auto menu = Menu::create(closeItem, NULL);
+    menu->setPosition(Vec2::ZERO);
+    menu->setTag(102);
+    this->addChild(menu, 1);
+
+    /////////////////////////////
+    // 3. add your codes below...
+
+    // add a label shows "Hello World"
+    // create and initialize a label
+
+    auto label = Label::createWithTTF("Hello World", "fonts/Marker Felt.ttf", 24);
+    if (label == nullptr)
+    {
+        problemLoading("'fonts/Marker Felt.ttf'");
+    }
+    else
+    {
+        // position the label on the center of the screen
+        label->setPosition(Vec2(origin.x + visibleSize.width / 2,
+                                origin.y + visibleSize.height - label->getContentSize().height));
+
+        // add the label as a child to this layer
+
+        this->addChild(label, 1);
+    }
+
+    // add "HelloWorld" splash screen"
+    auto sprite = Sprite::create("HelloWorld.png");
+    if (sprite == nullptr)
+    {
+        problemLoading("'HelloWorld.png'");
+    }
+    else
+    {
+        auto size = sprite->getContentSize();
+        log("HelloWorld sprite size: %f x %f", size.width, size.height);
+        auto visibleSize = Director::getInstance()->getVisibleSize();
+        // position the sprite on the center of the screen
+        sprite->setPosition(Vec2(size.width / 2 + origin.x, visibleSize.height - size.height / 2 + origin.y));
+        auto origin = Director::getInstance()->getVisibleOrigin();
+        log("Visible origin: %f, %f", origin.x, origin.y);
+
+        // sprite->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
+        //    sprite->setPosition(Vec2(0,0));
+        sprite->setTag(100);
+        // add the sprite as a child to this layer
+        this->addChild(sprite, 0);
+        auto spriteSize = sprite->getContentSize();
+        log("Sprite size: %f x %f", spriteSize.width, spriteSize.height);
+
+        // auto actualSize sprite->getBoundingBox().size;
+        // log("Sprite actual size: %f x %f", actualSize.width, actualSize.height);
+    }
+    auto sprite2 = Sprite::create("HelloWorld.png");
+    if (sprite2 == nullptr)
+    {
+        problemLoading("'HelloWorld.png'");
+    }
+    else
+    {
+        auto size = sprite2->getContentSize();
+        log("HelloWorld sprite size: %f x %f", size.width, size.height);
+        auto visibleSize = Director::getInstance()->getVisibleSize();
+        // position the sprite on the center of the screen
+        sprite2->setPosition(Vec2(size.width + size.width / 2 + origin.x, visibleSize.height - size.height / 2 + origin.y));
+        // sprite2->setTag(101);
+        // add the sprite as a child to this layer
+        this->addChild(sprite2, 0);
+    }
+    log("sprite2 position: %f, %f", sprite2->getPositionX(), sprite2->getPositionY());
+
+    auto sprite80 = Sprite::create("80.png");
+    if (sprite80 == nullptr)
+    {
+        problemLoading("'80.png'");
+    }
+    else
+    {
+        // position the sprite on the center of the screen
+        sprite80->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
+        // add the sprite as a child to this layer
+        this->addChild(sprite80, 0);
+    }
+
+    auto sprite81 = Sprite::create("81.png");
+    if (sprite81 == nullptr)
+    {
+        problemLoading("'81.png'");
+    }
+    else
+    { // position the sprite on the center of the screen
+        auto size = sprite81->getContentSize();
+        log("Sprite 81 size: %f x %f", size.width, size.height);
+        sprite81->setPosition(Vec2(visibleSize.width / 2 + origin.x + size.width, visibleSize.height / 2 + origin.y));
+        // add the sprite as a child to this layer
+        this->addChild(sprite81, 0);
+    }
+    return true;
+}
+cocos2d::Size smallResolutionSize = cocos2d::Size(480, 320);
+cocos2d::Size mediumResolutionSize = cocos2d::Size(1024, 768);
+cocos2d::Size designResolutionSize = cocos2d::Size(480, 320);
+
+void HelloWorld::menuCloseCallback(Ref *pSender)
+{
+
+    auto libraries = Libraries::getInstance();
+
+    // 等待库加载完成
+    while (!libraries->Loaded)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    log("HelloWorld::menuCloseCallback() is called!");
+    auto mapReader = new Client::MapReader("0.map");
+    int mapWidth = mapReader->Width;
+    int mapHeight = mapReader->Height;
+    log("Map size: %d x %d", mapWidth, mapHeight);
+    // 访问单元格数据
+    // for (int x = 0; x < mapWidth; x++)
+    // {
+    //     for (int y = 0; y < mapHeight; y++)
+    //     {
+    //         auto cell = mapReader->MapCells[x][y];
+    //         // 处理瓦片数据
+    //         int backImage = cell->BackImage;
+    //         int middleImage = cell->MiddleImage;
+    //         int frontImage = cell->FrontImage;
+    //         // log("Cell (%d, %d): BackImage=%d, MiddleImage=%d, FrontImage=%d", x, y, backImage, middleImage, frontImage );
+
+    //         // ...
+    //     }
+    // }
+
+    int MovementX = 300;
+    int MovementY = 300;
+    int ViewRangeX = 10;
+    int ViewRangeY = 10;
+    int startX = MovementX - ViewRangeX;
+    int endX = MovementX + ViewRangeX;
+    int startY = MovementY - ViewRangeY;
+    int endY = MovementY + ViewRangeY;
+    int endYExtended = endY + 5;
+
+    int Height = mapReader->Height;
+    int Width = mapReader->Width;
+
+    // auto M2CellInfo = mapReader->MapCells;
+    for (int y = startY; y <= endYExtended; y++)
+    {
+        if (y <= 0)
+            continue;
+        if (y >= Height)
+            break;
+
+        // int drawY = drawYCache[y - startY];
+
+        for (int x = startX; x <= endX; x++)
+        {
+            if (x < 0)
+                continue;
+            if (x >= Width)
+                break;
+
+            // int drawX = drawXCache[x - startX];
+            auto cell = mapReader->MapCells[x][y];
+
+            // Back
+            if (y % 2 == 0 && x % 2 == 0 && y <= endY)
+            {
+
+                if (cell->BackImage != 0 && cell->BackIndex != -1)
+                {
+                    int index = (cell->BackImage & 0x1FFFFFFF) - 1;
+                    // Console.WriteLine($ "[{x},{y}]lib BackIndex:{cell.BackIndex}");
+                    log("Cell (%d, %d): BackImage=%d, BackIndex=%d", x, y, cell->BackImage, cell->BackIndex);
+                    auto lib = libraries->MapLibs[cell->BackIndex];
+                    lib->draw(index, x, y);
+                }
+            }
+
+            // Middle
+            int midIndex = cell->MiddleImage - 1;
+            if (midIndex >= 0 && cell->MiddleIndex != -1)
+            {
+                // Console.WriteLine($ "[{x},{y}]lib MiddleIndex:{cell.MiddleIndex}");
+                log("Cell (%d, %d): MiddleImage=%d, MiddleIndex=%d", x, y, cell->MiddleImage, cell->MiddleIndex);
+                // var lib = Libraries.MapLibs[cell.MiddleIndex];
+                // Size s = lib.GetSize(midIndex);
+                // if ((s.Width == CellWidth && s.Height == CellHeight) ||
+                //     (s.Width == CellWidth * 2 && s.Height == CellHeight * 2))
+                //{
+                //     lib.Draw(midIndex, drawX, drawY);
+            }
+            // }
+
+            // Front
+            int frontIndex = (cell->FrontImage & 0x7FFF) - 1;
+            if (frontIndex != -1)
+            {
+                int fileIndex = cell->FrontIndex;
+                if (fileIndex != -1 && fileIndex != 200)
+                {
+                    // Console.WriteLine($ "[{x},{y}] lib fileIndex:{fileIndex}, frontIndex:{frontIndex}");
+                    log("Cell (%d, %d): fileIndex=%d, frontIndex=%d", x, y, fileIndex, frontIndex);
+                    // var lib = Libraries.MapLibs[fileIndex];
+                    // Size s = lib.GetSize(frontIndex);
+
+                    // doorfileIndex
+                    // if (cell.DoorIndex > 0)
+                    //{
+                    //    Door doorInfo = GetDoor(cell.DoorIndex);
+                    //    if (doorInfo == null)
+                    //    {
+                    //        doorInfo = new Door() { index = cell.DoorIndex, DoorState = 0, ImageIndex = 0, LastTick = CMain.Time };
+                    //        Doors.Add(doorInfo);
+                    //    }
+                    //    else if (doorInfo.DoorState != 0)
+                    //    {
+                    //        frontIndex += (doorInfo.ImageIndex + 1) * cell.DoorOffset;
+                    //    }
+                    //}
+
+                    // if (frontIndex >= 0 &&
+                    //     ((s.Width == CellWidth && s.Height == CellHeight) ||
+                    //      (s.Width == CellWidth * 2 && s.Height == CellHeight * 2)))
+                    //{
+                    //     lib.Draw(frontIndex, drawX, drawY);
+                    // }
+                }
+            }
+        }
+    }
+
+    // Close the cocos2d-x game scene and quit the application
+    //  Director::getInstance()->end();
+
+    /*To navigate back to native iOS screen(if present) without quitting the application  ,do not use Director::getInstance()->end() as given above,instead trigger a custom event created in RootViewController.mm as below*/
+
+    // EventCustom customEndEvent("game_scene_close_event");
+    //_eventDispatcher->dispatchEvent(&customEndEvent);
+}
