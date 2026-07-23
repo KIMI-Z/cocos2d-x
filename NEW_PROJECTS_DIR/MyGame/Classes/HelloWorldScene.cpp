@@ -186,6 +186,18 @@ cocos2d::Size smallResolutionSize = cocos2d::Size(480, 320);
 cocos2d::Size mediumResolutionSize = cocos2d::Size(1024, 768);
 cocos2d::Size designResolutionSize = cocos2d::Size(480, 320);
 
+Door *HelloWorld::GetDoor(uint8_t Index)
+{
+    for (auto door : Doors)
+    {
+        if (door->index == Index)
+        {
+            return door;
+        }
+    }
+    return nullptr;
+}
+
 void HelloWorld::menuCloseCallback(Ref *pSender)
 {
 
@@ -220,8 +232,8 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
 
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
-    int MovementX = 330;
-    int MovementY = 330;
+    int MovementX = 350;
+    int MovementY = 350;
     int ViewRangeX = 30;
     int ViewRangeY = 30;
     int startX = MovementX - ViewRangeX;
@@ -232,8 +244,8 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
 
     int Height = mapReader->Height;
     int Width = mapReader->Width;
-    int OffSetX = visibleSize.width / 2 /48;
-    int OffSetY = visibleSize.height / 2 /32;
+    int OffSetX = visibleSize.width / 2 / 48;
+    int OffSetY = visibleSize.height / 2 / 32;
     int CellWidth = 48;
     int CellHeight = 32;
 
@@ -252,11 +264,11 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
     {
         if (y <= 0)
             continue;
-        if (y >= Height)    
+        if (y >= Height)
             break;
 
-         int drawY = drawYCache[y - startY];
-         log("Drawing drawY=%d", drawY);
+        int drawY = drawYCache[y - startY];
+        // log("Drawing drawY=%d", drawY);
 
         for (int x = startX; x <= endX; x++)
         {
@@ -266,7 +278,7 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
                 break;
 
             int drawX = drawXCache[x - startX];
-            log("Drawing cell at (%d, %d) with drawX=%d, drawY=%d", x, y, drawX, drawY);
+            // log("Drawing cell at (%d, %d) with drawX=%d, drawY=%d", x, y, drawX, drawY);
             auto cell = mapReader->MapCells[x][y];
 
             // Back
@@ -277,7 +289,7 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
                 {
                     int index = (cell->BackImage & 0x1FFFFFFF) - 1;
                     // Console.WriteLine($ "[{x},{y}]lib BackIndex:{cell.BackIndex}");
-                   // log("Cell (%d, %d): BackImage=%d, BackIndex=%d", x, y, cell->BackImage, cell->BackIndex);
+                    // log("Cell (%d, %d): BackImage=%d, BackIndex=%d", x, y, cell->BackImage, cell->BackIndex);
                     auto lib = libraries->MapLibs[cell->BackIndex];
                     lib->draw(index, drawX, drawY);
                 }
@@ -288,15 +300,17 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
             if (midIndex >= 0 && cell->MiddleIndex != -1)
             {
                 // Console.WriteLine($ "[{x},{y}]lib MiddleIndex:{cell.MiddleIndex}");
-               // log("Cell (%d, %d): MiddleImage=%d, MiddleIndex=%d", x, y, cell->MiddleImage, cell->MiddleIndex);
-                // var lib = Libraries.MapLibs[cell.MiddleIndex];
-                // Size s = lib.GetSize(midIndex);
-                // if ((s.Width == CellWidth && s.Height == CellHeight) ||
-                //     (s.Width == CellWidth * 2 && s.Height == CellHeight * 2))
-                //{
-                //     lib.Draw(midIndex, drawX, drawY);
+                // log("Cell (%d, %d): MiddleImage=%d, MiddleIndex=%d", x, y, cell->MiddleImage, cell->MiddleIndex);
+                auto lib = libraries->MapLibs[cell->MiddleIndex];
+                auto s = lib->getSize(midIndex);
+                // log ("s.width=%d, s.height=%d", s.width, s.height);
+                if ((s.width == CellWidth && s.height == CellHeight) ||
+                    (s.width == CellWidth * 2 && s.height == CellHeight * 2))
+                {
+                    // log("Drawing middle image at (%d, %d) with size (%d, %d)", drawX, drawY, s.width, s.height);
+                    lib->draw(midIndex, drawX, drawY);
+                }
             }
-            // }
 
             // Front
             int frontIndex = (cell->FrontImage & 0x7FFF) - 1;
@@ -305,32 +319,34 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
                 int fileIndex = cell->FrontIndex;
                 if (fileIndex != -1 && fileIndex != 200)
                 {
-                    // Console.WriteLine($ "[{x},{y}] lib fileIndex:{fileIndex}, frontIndex:{frontIndex}");
-                   // log("Cell (%d, %d): fileIndex=%d, frontIndex=%d", x, y, fileIndex, frontIndex);
-                    // var lib = Libraries.MapLibs[fileIndex];
-                    // Size s = lib.GetSize(frontIndex);
+                    log("Cell (%d, %d): fileIndex=%d, frontIndex=%d", x, y, fileIndex, frontIndex);
+
+                    auto lib = libraries->MapLibs[fileIndex];
+                    auto s = lib->getSize(frontIndex);
 
                     // doorfileIndex
-                    // if (cell.DoorIndex > 0)
-                    //{
-                    //    Door doorInfo = GetDoor(cell.DoorIndex);
-                    //    if (doorInfo == null)
-                    //    {
-                    //        doorInfo = new Door() { index = cell.DoorIndex, DoorState = 0, ImageIndex = 0, LastTick = CMain.Time };
-                    //        Doors.Add(doorInfo);
-                    //    }
-                    //    else if (doorInfo.DoorState != 0)
-                    //    {
-                    //        frontIndex += (doorInfo.ImageIndex + 1) * cell.DoorOffset;
-                    //    }
-                    //}
+                    if (cell->DoorIndex > 0)
+                    {
+                        auto doorInfo = GetDoor(cell->DoorIndex);
+                        if (doorInfo == nullptr)
+                        {
+                            //    doorInfo = new Door() { index = cell->DoorIndex, DoorState = 0, ImageIndex = 0, LastTick = CMain.Time };
+                            //    doorInfo = new Door() { index = cell->DoorIndex, DoorState = 0, ImageIndex = 0, LastTick = 0 };
+                            auto doorInfo = new Door(cell->DoorIndex, DoorState::Closed, 0, 0, Vec2(x, y));
+                            Doors.push_back(doorInfo);
+                        }
+                        else if (doorInfo->doorState != DoorState::Open)
+                        {
+                            frontIndex += (doorInfo->imageIndex + 1) * cell->DoorOffset;
+                        }
+                    }
 
-                    // if (frontIndex >= 0 &&
-                    //     ((s.Width == CellWidth && s.Height == CellHeight) ||
-                    //      (s.Width == CellWidth * 2 && s.Height == CellHeight * 2)))
-                    //{
-                    //     lib.Draw(frontIndex, drawX, drawY);
-                    // }
+                    if (frontIndex >= 0 &&
+                        ((s.width == CellWidth && s.height == CellHeight) ||
+                         (s.width == CellWidth * 2 && s.height == CellHeight * 2)))
+                    {
+                        lib->draw(frontIndex, drawX, drawY);
+                    }
                 }
             }
         }

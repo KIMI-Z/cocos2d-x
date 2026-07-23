@@ -26,19 +26,61 @@
 #define __HELLOWORLD_SCENE_H__
 
 #include "cocos2d.h"
+#include <cstdint>  // for uint8_t, int64_t
+#include <string>   // if Point uses std::string or other types
+#include <vector>
+
+USING_NS_CC;  // 加上这行
+// Assuming DoorState is an enum or class defined elsewhere
+enum class DoorState {
+    // Define your door states here
+    Open,
+    Closed,
+    Locked,
+    // etc.
+};
+
+// Assuming Point is defined elsewhere (could be a struct with x, y coordinates)
+struct Point {
+    int x;
+    int y;
+    // or use whatever coordinate type you need
+};
+
+class Door {
+public:
+    uint8_t index;        // byte -> uint8_t
+    DoorState doorState;  // DoorState enum/class
+    uint8_t imageIndex;   // byte -> uint8_t
+    int64_t lastTick;     // long -> int64_t (64-bit integer)
+    Vec2 location;       // Point struct/class
+
+     // 构造函数
+    Door() : index(0), doorState(DoorState::Closed), 
+             imageIndex(0), lastTick(0), location(Vec2::ZERO) {}
+    
+    Door(uint8_t idx, DoorState state, uint8_t imgIdx, 
+         long long tick, const Vec2& loc)
+        : index(idx), doorState(state), imageIndex(imgIdx),
+          lastTick(tick), location(loc) {}
+};
 
 class HelloWorld : public cocos2d::Scene
 {
 public:
     static cocos2d::Scene* createScene();
-
+    std::vector<Door*> Doors;
     virtual bool init();
     
     // a selector callback
     void menuCloseCallback(cocos2d::Ref* pSender);
+    Door* GetDoor(uint8_t Index);
     
     // implement the "static create()" method manually
     CREATE_FUNC(HelloWorld);
 };
+
+
+
 
 #endif // __HELLOWORLD_SCENE_H__

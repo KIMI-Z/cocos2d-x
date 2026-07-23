@@ -467,11 +467,11 @@ void MLibrary::draw(int index, PointLib point, Color colour, bool offSet)
 {
     if (!checkImage(index))
     {
-        // log("checkImage failed (%d)", index);
+         log("checkImage failed (%d)", index);
         return;
     }
 
-    // log("checkImage success (%d)", index);
+     log("checkImage success (%d)", index);
     MImage *mi = _images[index];
     if (offSet)
         point.offset(mi->X, mi->Y);
