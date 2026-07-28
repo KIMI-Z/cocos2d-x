@@ -7,8 +7,6 @@
 // ==================== PointLib实现 ====================
 PointLib::PointLib() : x(0), y(0)
 {
-
-
 }
 PointLib::PointLib(int _x, int _y) : x(_x), y(_y) {}
 void PointLib::offset(int dx, int dy)
@@ -475,7 +473,7 @@ void MLibrary::draw(int index, PointLib point, Color colour, bool offSet)
         return;
     }
 
-    log("checkImage success (%d)", index);
+    // log("checkImage success (%d)", index);
     MImage *mi = _images[index];
     if (offSet)
         point.offset(mi->X, mi->Y);
@@ -541,6 +539,172 @@ void MLibrary::draw(int index, cocos2d::Rect section, PointLib point, Color colo
         }
     }
 
+    mi->CleanTime = getCurrentTime() + Settings::CleanDelay;
+}
+
+void MLibrary::drawUp(int index, int x, int y)
+{
+    // 假设 Settings::ScreenWidth 是静态变量或成员变量
+    if (x >= Settings::ScreenWidth)
+        return;
+
+    if (!checkImage(index))
+        return;
+
+    // 假设 _images 是 std::vector<MImage> 或类似容器
+    MImage *mi = _images[index];
+    y -= mi->Height; // Cocos2d-x 坐标原点在左上，注意 y 的换算，这里保持原逻辑
+
+    if (y >= Settings::ScreenHeight)
+        return;
+
+    // 检查是否完全在屏幕外（右侧和底部已检查，这里检查左侧和顶部）
+    if (x + mi->Width < 0 || y + mi->Height < 0)
+        return;
+
+    // ---- 核心绘制部分 ----
+    // 方案一：使用 Sprite 绘制（推荐，支持裁剪和锚点）
+    auto sprite = Sprite::createWithTexture(mi->Image);
+    sprite->setAnchorPoint(Vec2::ZERO); // 设置为左下角锚点，匹配原逻辑
+    sprite->setPosition(Vec2(x, y));
+
+    // Cocos2d-x 默认不支持直接通过矩形裁剪纹理绘制，但可以通过 setTextureRect 实现
+    // 注意原代码中 Rectangle(0,0,mi.width,mi.height) 表示绘制完整纹理
+    sprite->setTextureRect(Rect(0, 0, mi->Width, mi->Height));
+
+    auto scene = cocos2d::Director::getInstance()->getRunningScene();
+    // 添加到当前层或父节点（假设 this 是 Layer）
+    if (scene)
+    {
+        scene->addChild(sprite);
+        sprite->runAction(cocos2d::Sequence::create(
+            cocos2d::DelayTime::create(Settings::CleanDelay / 1000.0f),
+            cocos2d::RemoveSelf::create(),
+            nullptr));
+    }
+
+    // 方案二：使用 DrawNode 或自定义绘制（如需要更底层的绘制）
+    // 但通常用 Sprite 即可
+
+    // 更新清理时间
+    mi->CleanTime = getCurrentTime() + Settings::CleanDelay;
+}
+
+void MLibrary::drawUpBlend(int index, PointLib point)
+{
+    if (!checkImage(index))
+        return;
+
+    MImage *mi = _images[index];
+    int y = point.y - mi->Height; // 注意 Cocos2d-x 坐标原点在左下，但这里保持原逻辑
+
+    // 边界检查
+    if (point.x >= Settings::ScreenWidth ||
+        y >= Settings::ScreenHeight ||
+        point.x + mi->Width < 0 ||
+        y + mi->Height < 0)
+        return;
+
+    // ---- 绘制带混合模式的图片 ----
+    auto sprite = Sprite::createWithTexture(mi->Image);
+    sprite->setAnchorPoint(Vec2::ZERO); // 左下角锚点，匹配原逻辑
+    sprite->setPosition(Vec2(point.x, y));
+    sprite->setTextureRect(Rect(0, 0, mi->Width, mi->Height));
+
+   // 设置混合模式 - 使用 backend::BlendFactor 枚举
+    BlendFunc blend;
+    blend.src = backend::BlendFactor::SRC_ALPHA;          // 对应 GL_SRC_ALPHA
+    blend.dst = backend::BlendFactor::ONE_MINUS_SRC_ALPHA; // 对应 GL_ONE_MINUS_SRC_ALPHA
+    sprite->setBlendFunc(blend);
+
+    auto scene = cocos2d::Director::getInstance()->getRunningScene();
+    // 添加到当前层或父节点（假设 this 是 Layer）
+    if (scene)
+    {
+        scene->addChild(sprite);
+        sprite->runAction(cocos2d::Sequence::create(
+            cocos2d::DelayTime::create(Settings::CleanDelay / 1000.0f),
+            cocos2d::RemoveSelf::create(),
+            nullptr));
+    }
+
+
+    // 更新清理时间
+    mi->CleanTime = getCurrentTime() + Settings::CleanDelay;
+}
+
+void MLibrary::drawBlend(int index, PointLib point, Color colour, bool offSet, float rate)
+{
+    if (!checkImage(index))
+        return;
+
+    MImage *mi = _images[index];
+
+    // 偏移处理
+    if (offSet) {
+        point.x += mi->X;
+        point.y += mi->Y;
+    }
+
+    int y = point.y - mi->Height; // 注意 Cocos2d-x 坐标原点在左下，但这里保持原逻辑
+
+    // 边界检查
+    if (point.x >= Settings::ScreenWidth || 
+        y >= Settings::ScreenHeight || 
+        point.x + mi->Width < 0 || 
+        y + mi->Height < 0)
+        return;
+
+    // ---- 创建 Sprite ----
+    auto sprite = Sprite::createWithTexture(mi->Image);
+    sprite->setAnchorPoint(Vec2::ZERO);
+    sprite->setPosition(Vec2(point.x, y));
+    sprite->setTextureRect(Rect(0, 0, mi->Width, mi->Height));
+
+    // ---- 设置颜色（着色） ----
+    // Color4B 包含 R,G,B,A 四个通道
+    sprite->setColor(Color3B(colour.r, colour.g, colour.b));
+    sprite->setOpacity(colour.a);
+
+    // ---- 设置混合模式 ----
+    // rate 对应 DirectX 的混合强度，在 Cocos2d-x 中通过修改 Alpha 或自定义混合实现
+    BlendFunc blend;
+    
+    if (rate >= 1.0f) {
+        // 标准 Alpha 混合
+        blend.src = backend::BlendFactor::SRC_ALPHA;
+        blend.dst = backend::BlendFactor::ONE_MINUS_SRC_ALPHA;
+    } else if (rate <= 0.0f) {
+        // 完全不透明（相当于关闭混合）
+        blend.src = backend::BlendFactor::ONE;
+        blend.dst = backend::BlendFactor::ZERO;
+    } else {
+        // 自定义混合强度 - 通过调整源 Alpha 实现
+        // 注意：Cocos2d-x 的 BlendFactor 不支持直接设置强度数值
+        // 但可以通过预乘 Alpha 或修改 Sprite 的透明度来模拟
+        
+        // 方法1：修改 Sprite 的透明度（推荐）
+        sprite->setOpacity(static_cast<GLubyte>(colour.a * rate));
+        
+        // 方法2：使用预乘 Alpha 混合
+        blend.src = backend::BlendFactor::SRC_ALPHA;
+        blend.dst = backend::BlendFactor::ONE_MINUS_SRC_ALPHA;
+    }
+    
+    sprite->setBlendFunc(blend);
+
+    auto scene = cocos2d::Director::getInstance()->getRunningScene();
+    // 添加到当前层或父节点（假设 this 是 Layer）
+    if (scene)
+    {
+        scene->addChild(sprite);
+        sprite->runAction(cocos2d::Sequence::create(
+            cocos2d::DelayTime::create(Settings::CleanDelay / 1000.0f),
+            cocos2d::RemoveSelf::create(),
+            nullptr));
+    }
+
+    // 更新清理时间
     mi->CleanTime = getCurrentTime() + Settings::CleanDelay;
 }
 

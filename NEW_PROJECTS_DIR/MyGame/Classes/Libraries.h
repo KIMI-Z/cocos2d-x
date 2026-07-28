@@ -167,6 +167,10 @@ public:
     SizeLib getTrueSize(int index);
 
     void draw(int index, int x, int y);
+    void drawUp(int index, int x, int y);
+    void drawUpBlend(int index, PointLib point);
+    void DrawTinted(int index, PointLib point, Color colour, Color Tint,bool offSet = false);
+    void drawBlend(int index, PointLib point, Color colour, bool offSet = false, float rate = 1.0f);
     void draw(int index, PointLib point, Color colour, bool offSet = false);
     void draw(int index, PointLib point, Color colour, bool offSet, float opacity);
     void draw(int index, cocos2d::Rect section, PointLib point, Color colour, bool offSet);

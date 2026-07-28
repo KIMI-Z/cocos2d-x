@@ -365,7 +365,7 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
                 index--;
                 int animationoffset = mapReader->MapCells[x][y]->TileAnimationOffset ^ 0x2000;
                 index += animationoffset * (AnimationCount % animation);
-                // libraries->MapLibs[190].DrawUp(index, drawX, drawY);
+                // libraries->MapLibs[190]->drawUp(index, drawX, drawY);
             }
 
             // Draw mir3 middle layer
@@ -390,11 +390,11 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
 
                             if (blend && (animation == 10 || animation == 8)) // diamond mines, abyss blends
                             {
-                                // libraries->MapLibs[mapReader->MapCells[x][y]->MiddleIndex].DrawUpBlend(index, cocos2d::Point(drawX, drawY));
+                                libraries->MapLibs[mapReader->MapCells[x][y]->MiddleIndex]->drawUpBlend(index, PointLib(drawX, drawY));
                             }
                             else
                             {
-                                // libraries->MapLibs[mapReader->MapCells[x][y]->MiddleIndex].DrawUp(index, drawX, drawY);
+                                libraries->MapLibs[mapReader->MapCells[x][y]->MiddleIndex]->drawUp(index, drawX, drawY);
                             }
                         }
                     }
@@ -402,7 +402,7 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
                     if ((s.width != CellWidth || s.height != CellHeight) &&
                         (s.width != (CellWidth * 2) || s.height != (CellHeight * 2)) && !blend)
                     {
-                        // libraries->MapLibs[mapReader->MapCells[x][y]->MiddleIndex].DrawUp(index, drawX, drawY);
+                        libraries->MapLibs[mapReader->MapCells[x][y]->MiddleIndex]->drawUp(index, drawX, drawY);
                     }
                 }
             }
@@ -461,18 +461,17 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
 
             if (blend)
             {
-                // if (fileIndex == 14 || fileIndex == 27 || (fileIndex > 99 && fileIndex < 199))
-                //     libraries->MapLibs[fileIndex].DrawBlend(index, cocos2d::Point(drawX, drawY - (3 * CellHeight)),
-                //                                            cocos2d::Color4F::WHITE, true);
-                // else
-                //     libraries->MapLibs[fileIndex].DrawBlend(index, cocos2d::Point(drawX, drawY - s.height),
-                //                                            cocos2d::Color4F::WHITE, (index >= 2723 && index <= 2732));
+                if (fileIndex == 14 || fileIndex == 27 || (fileIndex > 99 && fileIndex < 199))
+                    libraries->MapLibs[fileIndex]->drawBlend(index, PointLib(drawX, drawY - (3 * CellHeight)),
+                                                             Color::White(), true);
+                else
+                    libraries->MapLibs[fileIndex]->drawBlend(index, PointLib(drawX, drawY - s.height),
+                                                             Color::White(), (index >= 2723 && index <= 2732));
             }
             else
             {
                 if (fileIndex == 28 && libraries->MapLibs[fileIndex]->getOffset(index) != PointLib::ZERO())
-                    libraries->MapLibs[fileIndex]->draw(index, PointLib(drawX, drawY - CellHeight),
-                                                      Color::White(), true);
+                    libraries->MapLibs[fileIndex]->draw(index, PointLib(drawX, drawY - CellHeight), Color::White(), true);
                 else
                     libraries->MapLibs[fileIndex]->draw(index, drawX, drawY - s.height);
             }
