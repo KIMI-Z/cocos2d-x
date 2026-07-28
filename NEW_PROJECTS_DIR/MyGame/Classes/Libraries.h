@@ -23,6 +23,23 @@ struct PointLib
     PointLib();
     PointLib(int _x, int _y);
     void offset(int dx, int dy);
+     // == 运算符重载 - 作为成员函数
+    bool operator==(const PointLib& other) const
+    {
+        return x == other.x && y == other.y;
+    }
+
+    // != 运算符重载 - 作为成员函数
+    bool operator!=(const PointLib& other) const
+    {
+        return !(*this == other);
+    }
+
+    // 静态零值方法
+    static PointLib ZERO()
+    {
+        return PointLib(0, 0);
+    }
 };
 
 struct SizeLib

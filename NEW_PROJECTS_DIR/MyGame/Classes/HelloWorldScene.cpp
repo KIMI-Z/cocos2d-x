@@ -248,6 +248,7 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
     int OffSetY = visibleSize.height / 2 / 32;
     int CellWidth = 48;
     int CellHeight = 32;
+    int AnimationCount = 0;
 
     // Create drawXCache vector
     std::vector<int> drawXCache(endX - startX + 1);
@@ -348,6 +349,132 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
                         lib->draw(frontIndex, drawX, drawY);
                     }
                 }
+            }
+
+            // draw object
+            int index;
+            unsigned char animation;
+            bool blend;
+            SizeLib s;
+
+            // Draw shanda's tile animation layer
+            index = mapReader->MapCells[x][y]->TileAnimationImage;
+            animation = mapReader->MapCells[x][y]->TileAnimationFrames;
+            if ((index > 0) && (animation > 0))
+            {
+                index--;
+                int animationoffset = mapReader->MapCells[x][y]->TileAnimationOffset ^ 0x2000;
+                index += animationoffset * (AnimationCount % animation);
+                // libraries->MapLibs[190].DrawUp(index, drawX, drawY);
+            }
+
+            // Draw mir3 middle layer
+            if ((mapReader->MapCells[x][y]->MiddleIndex >= 0) && (mapReader->MapCells[x][y]->MiddleIndex != -1))
+            {
+                index = mapReader->MapCells[x][y]->MiddleImage - 1;
+                if (index > 0)
+                {
+                    animation = mapReader->MapCells[x][y]->MiddleAnimationFrame;
+                    blend = false;
+                    if ((animation > 0) && (animation < 255))
+                    {
+                        if ((animation & 0x0f) > 0)
+                        {
+                            blend = true;
+                            animation &= 0x0f;
+                        }
+                        if (animation > 0)
+                        {
+                            unsigned char animationTick = mapReader->MapCells[x][y]->MiddleAnimationTick;
+                            index += (AnimationCount % (animation + (animation * animationTick))) / (1 + animationTick);
+
+                            if (blend && (animation == 10 || animation == 8)) // diamond mines, abyss blends
+                            {
+                                // libraries->MapLibs[mapReader->MapCells[x][y]->MiddleIndex].DrawUpBlend(index, cocos2d::Point(drawX, drawY));
+                            }
+                            else
+                            {
+                                // libraries->MapLibs[mapReader->MapCells[x][y]->MiddleIndex].DrawUp(index, drawX, drawY);
+                            }
+                        }
+                    }
+                    s = libraries->MapLibs[mapReader->MapCells[x][y]->MiddleIndex]->getSize(index);
+                    if ((s.width != CellWidth || s.height != CellHeight) &&
+                        (s.width != (CellWidth * 2) || s.height != (CellHeight * 2)) && !blend)
+                    {
+                        // libraries->MapLibs[mapReader->MapCells[x][y]->MiddleIndex].DrawUp(index, drawX, drawY);
+                    }
+                }
+            }
+
+            // Draw front layer
+            index = (mapReader->MapCells[x][y]->FrontImage & 0x7FFF) - 1;
+
+            if (index < 0)
+                continue;
+
+            int fileIndex = mapReader->MapCells[x][y]->FrontIndex;
+            if (fileIndex == -1)
+                continue;
+            animation = mapReader->MapCells[x][y]->FrontAnimationFrame;
+
+            if ((animation & 0x80) > 0)
+            {
+                blend = true;
+                animation &= 0x7F;
+            }
+            else
+                blend = false;
+
+            if (animation > 0)
+            {
+                unsigned char animationTick = mapReader->MapCells[x][y]->FrontAnimationTick;
+                index += (AnimationCount % (animation + (animation * animationTick))) / (1 + animationTick);
+            }
+
+            if (mapReader->MapCells[x][y]->DoorIndex > 0)
+            {
+                Door *DoorInfo = GetDoor(mapReader->MapCells[x][y]->DoorIndex);
+                if (DoorInfo == nullptr)
+                {
+                    DoorInfo = new Door();
+                    DoorInfo->index = mapReader->MapCells[x][y]->DoorIndex;
+                    DoorInfo->doorState = DoorState::Open;
+                    DoorInfo->imageIndex = 0;
+                    DoorInfo->lastTick = 0;
+                    Doors.push_back(DoorInfo);
+                }
+                else
+                {
+                    if (DoorInfo->doorState != DoorState::Open)
+                    {
+                        index += (DoorInfo->imageIndex + 1) * mapReader->MapCells[x][y]->DoorOffset;
+                    }
+                }
+            }
+
+            s = libraries->MapLibs[fileIndex]->getSize(index);
+            if (s.width == CellWidth && s.height == CellHeight && animation == 0)
+                continue;
+            if ((s.width == CellWidth * 2) && (s.height == CellHeight * 2) && (animation == 0))
+                continue;
+
+            if (blend)
+            {
+                // if (fileIndex == 14 || fileIndex == 27 || (fileIndex > 99 && fileIndex < 199))
+                //     libraries->MapLibs[fileIndex].DrawBlend(index, cocos2d::Point(drawX, drawY - (3 * CellHeight)),
+                //                                            cocos2d::Color4F::WHITE, true);
+                // else
+                //     libraries->MapLibs[fileIndex].DrawBlend(index, cocos2d::Point(drawX, drawY - s.height),
+                //                                            cocos2d::Color4F::WHITE, (index >= 2723 && index <= 2732));
+            }
+            else
+            {
+                if (fileIndex == 28 && libraries->MapLibs[fileIndex]->getOffset(index) != PointLib::ZERO())
+                    libraries->MapLibs[fileIndex]->draw(index, PointLib(drawX, drawY - CellHeight),
+                                                      Color::White(), true);
+                else
+                    libraries->MapLibs[fileIndex]->draw(index, drawX, drawY - s.height);
             }
         }
     }
