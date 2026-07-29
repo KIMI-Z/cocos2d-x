@@ -497,6 +497,44 @@ void MLibrary::draw(int index, PointLib point, Color colour, bool offSet)
                 cocos2d::DelayTime::create(Settings::CleanDelay / 1000.0f),
                 cocos2d::RemoveSelf::create(),
                 nullptr));
+
+            auto mouseListener = EventListenerMouse::create();
+
+          mouseListener->onMouseMove = [sprite, point](EventMouse *event)
+            {
+                // 1. 获取鼠标的 OpenGL 坐标（左下角原点）
+                Vec2 mousePosGL = event->getLocation();
+                
+                // 2. 转换为屏幕坐标（左上角原点，Y轴向下）
+                Size winSize = Director::getInstance()->getWinSize();
+                Vec2 mousePosUI = Vec2(mousePosGL.x, winSize.height - mousePosGL.y);
+                
+                // 3. 现在 mousePosUI 和 sprite 的位置在同一个坐标系（屏幕坐标系）
+                // 计算 sprite 在屏幕坐标系中的范围
+                Vec2 spritePos = sprite->getPosition();  // 这是屏幕坐标
+                Size spriteSize = sprite->getContentSize();
+                
+                // 4. 构建屏幕坐标系中的包围盒
+                Rect rect = Rect(
+                    spritePos.x - spriteSize.width / 2,
+                    spritePos.y - spriteSize.height / 2,  // 注意：Y轴向下，所以这里是减
+                    spriteSize.width,
+                    spriteSize.height
+                );
+                
+                if (rect.containsPoint(mousePosUI))
+                {
+                   // 高亮效果：增加亮度和透明度
+                   sprite->setColor(Color3B::GREEN);  // 亮白偏黄
+                    // log("Mouse over sprite at UI coords: (%f, %f)", mousePosUI.x, mousePosUI.y);
+                }
+                else
+                {
+                    sprite->setColor(Color3B::WHITE);
+                }
+            };
+            // 使用 Director 获取事件分发器
+            cocos2d::Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(mouseListener, sprite);
         }
     }
 
@@ -611,9 +649,9 @@ void MLibrary::drawUpBlend(int index, PointLib point)
     sprite->setPosition(Vec2(point.x, y));
     sprite->setTextureRect(Rect(0, 0, mi->Width, mi->Height));
 
-   // 设置混合模式 - 使用 backend::BlendFactor 枚举
+    // 设置混合模式 - 使用 backend::BlendFactor 枚举
     BlendFunc blend;
-    blend.src = backend::BlendFactor::SRC_ALPHA;          // 对应 GL_SRC_ALPHA
+    blend.src = backend::BlendFactor::SRC_ALPHA;           // 对应 GL_SRC_ALPHA
     blend.dst = backend::BlendFactor::ONE_MINUS_SRC_ALPHA; // 对应 GL_ONE_MINUS_SRC_ALPHA
     sprite->setBlendFunc(blend);
 
@@ -628,7 +666,6 @@ void MLibrary::drawUpBlend(int index, PointLib point)
             nullptr));
     }
 
-
     // 更新清理时间
     mi->CleanTime = getCurrentTime() + Settings::CleanDelay;
 }
@@ -641,7 +678,8 @@ void MLibrary::drawBlend(int index, PointLib point, Color colour, bool offSet, f
     MImage *mi = _images[index];
 
     // 偏移处理
-    if (offSet) {
+    if (offSet)
+    {
         point.x += mi->X;
         point.y += mi->Y;
     }
@@ -649,9 +687,9 @@ void MLibrary::drawBlend(int index, PointLib point, Color colour, bool offSet, f
     int y = point.y - mi->Height; // 注意 Cocos2d-x 坐标原点在左下，但这里保持原逻辑
 
     // 边界检查
-    if (point.x >= Settings::ScreenWidth || 
-        y >= Settings::ScreenHeight || 
-        point.x + mi->Width < 0 || 
+    if (point.x >= Settings::ScreenWidth ||
+        y >= Settings::ScreenHeight ||
+        point.x + mi->Width < 0 ||
         y + mi->Height < 0)
         return;
 
@@ -669,28 +707,33 @@ void MLibrary::drawBlend(int index, PointLib point, Color colour, bool offSet, f
     // ---- 设置混合模式 ----
     // rate 对应 DirectX 的混合强度，在 Cocos2d-x 中通过修改 Alpha 或自定义混合实现
     BlendFunc blend;
-    
-    if (rate >= 1.0f) {
+
+    if (rate >= 1.0f)
+    {
         // 标准 Alpha 混合
         blend.src = backend::BlendFactor::SRC_ALPHA;
         blend.dst = backend::BlendFactor::ONE_MINUS_SRC_ALPHA;
-    } else if (rate <= 0.0f) {
+    }
+    else if (rate <= 0.0f)
+    {
         // 完全不透明（相当于关闭混合）
         blend.src = backend::BlendFactor::ONE;
         blend.dst = backend::BlendFactor::ZERO;
-    } else {
+    }
+    else
+    {
         // 自定义混合强度 - 通过调整源 Alpha 实现
         // 注意：Cocos2d-x 的 BlendFactor 不支持直接设置强度数值
         // 但可以通过预乘 Alpha 或修改 Sprite 的透明度来模拟
-        
+
         // 方法1：修改 Sprite 的透明度（推荐）
         sprite->setOpacity(static_cast<GLubyte>(colour.a * rate));
-        
+
         // 方法2：使用预乘 Alpha 混合
         blend.src = backend::BlendFactor::SRC_ALPHA;
         blend.dst = backend::BlendFactor::ONE_MINUS_SRC_ALPHA;
     }
-    
+
     sprite->setBlendFunc(blend);
 
     auto scene = cocos2d::Director::getInstance()->getRunningScene();

@@ -154,32 +154,32 @@ bool HelloWorld::init()
     // }
     // log("sprite2 position: %f, %f", sprite2->getPositionX(), sprite2->getPositionY());
 
-    auto sprite80 = Sprite::create("80.png");
-    if (sprite80 == nullptr)
-    {
-        problemLoading("'80.png'");
-    }
-    else
-    {
-        // position the sprite on the center of the screen
-        sprite80->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
-        // add the sprite as a child to this layer
-        this->addChild(sprite80, 0);
-    }
+    // auto sprite80 = Sprite::create("80.png");
+    // if (sprite80 == nullptr)
+    // {
+    //     problemLoading("'80.png'");
+    // }
+    // else
+    // {
+    //     // position the sprite on the center of the screen
+    //     sprite80->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
+    //     // add the sprite as a child to this layer
+    //     this->addChild(sprite80, 0);
+    // }
 
-    auto sprite81 = Sprite::create("81.png");
-    if (sprite81 == nullptr)
-    {
-        problemLoading("'81.png'");
-    }
-    else
-    { // position the sprite on the center of the screen
-        auto size = sprite81->getContentSize();
-        log("Sprite 81 size: %f x %f", size.width, size.height);
-        sprite81->setPosition(Vec2(visibleSize.width / 2 + origin.x + size.width, visibleSize.height / 2 + origin.y));
-        // add the sprite as a child to this layer
-        this->addChild(sprite81, 0);
-    }
+    // auto sprite81 = Sprite::create("81.png");
+    // if (sprite81 == nullptr)
+    // {
+    //     problemLoading("'81.png'");
+    // }
+    // else
+    // { // position the sprite on the center of the screen
+    //     auto size = sprite81->getContentSize();
+    //     log("Sprite 81 size: %f x %f", size.width, size.height);
+    //     sprite81->setPosition(Vec2(visibleSize.width / 2 + origin.x + size.width, visibleSize.height / 2 + origin.y));
+    //     // add the sprite as a child to this layer
+    //     this->addChild(sprite81, 0);
+    // }
     return true;
 }
 cocos2d::Size smallResolutionSize = cocos2d::Size(480, 320);
@@ -320,7 +320,7 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
                 int fileIndex = cell->FrontIndex;
                 if (fileIndex != -1 && fileIndex != 200)
                 {
-                    log("Cell (%d, %d): fileIndex=%d, frontIndex=%d", x, y, fileIndex, frontIndex);
+                    // log("Cell (%d, %d): fileIndex=%d, frontIndex=%d", x, y, fileIndex, frontIndex);
 
                     auto lib = libraries->MapLibs[fileIndex];
                     auto s = lib->getSize(frontIndex);
@@ -365,7 +365,7 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
                 index--;
                 int animationoffset = mapReader->MapCells[x][y]->TileAnimationOffset ^ 0x2000;
                 index += animationoffset * (AnimationCount % animation);
-                // libraries->MapLibs[190]->drawUp(index, drawX, drawY);
+                libraries->MapLibs[190]->drawUp(index, drawX, drawY);
             }
 
             // Draw mir3 middle layer
@@ -471,9 +471,15 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
             else
             {
                 if (fileIndex == 28 && libraries->MapLibs[fileIndex]->getOffset(index) != PointLib::ZERO())
+                {
                     libraries->MapLibs[fileIndex]->draw(index, PointLib(drawX, drawY - CellHeight), Color::White(), true);
+                }
+
                 else
-                    libraries->MapLibs[fileIndex]->draw(index, drawX, drawY - s.height);
+                {
+                    libraries->MapLibs[fileIndex]->draw(index, drawX, drawY - s.height + 32);
+                    // log("Drawing front image at (%d, %d) with size (%d, %d)", drawX, drawY - s.height, s.width, s.height);
+                }
             }
         }
     }
