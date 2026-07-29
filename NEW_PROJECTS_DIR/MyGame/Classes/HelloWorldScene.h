@@ -71,11 +71,14 @@ public:
     static cocos2d::Scene* createScene();
     std::vector<Door*> Doors;
     virtual bool init();
+    int MovementX = 300;
+    int MovementY = 300;
     
     // a selector callback
     void menuCloseCallback(cocos2d::Ref* pSender);
     Door* GetDoor(uint8_t Index);
-    
+    void onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event);
+    void onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event);
     // implement the "static create()" method manually
     CREATE_FUNC(HelloWorld);
 };

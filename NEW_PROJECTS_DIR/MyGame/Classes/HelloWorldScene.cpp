@@ -180,7 +180,52 @@ bool HelloWorld::init()
     //     // add the sprite as a child to this layer
     //     this->addChild(sprite81, 0);
     // }
+    // creating a keyboard event listener
+    auto listener = EventListenerKeyboard::create();
+    listener->onKeyPressed = CC_CALLBACK_2(HelloWorld::onKeyPressed, this);
+    listener->onKeyReleased = CC_CALLBACK_2(HelloWorld::onKeyReleased, this);
+
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+
     return true;
+}
+
+void HelloWorld::onKeyPressed(EventKeyboard::KeyCode keyCode, Event* event)
+{
+        log("Key with keycode %d pressed", keyCode);
+        switch (keyCode)
+        {
+        case EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+           MovementX += 10;
+            menuCloseCallback(nullptr);
+            /* code */
+            break;
+        case EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+            MovementX -= 10;
+            menuCloseCallback(nullptr);
+            break;
+        case EventKeyboard::KeyCode::KEY_UP_ARROW:
+            MovementY -= 10;
+            menuCloseCallback(nullptr); 
+              break;
+        case EventKeyboard::KeyCode::KEY_DOWN_ARROW:
+            MovementY += 10;
+            menuCloseCallback(nullptr);
+            break;
+        default:
+            break;
+        }
+        // if(keyCode == EventKeyboard::KeyCode::KEY_RIGHT_ARROW)
+        // {
+         
+        //     // log("Escape key pressed, closing the application.");
+        //     // Director::getInstance()->end();
+        // }
+}
+
+void HelloWorld::onKeyReleased(EventKeyboard::KeyCode keyCode, Event* event)
+{
+        log("Key with keycode %d released", keyCode);
 }
 cocos2d::Size smallResolutionSize = cocos2d::Size(480, 320);
 cocos2d::Size mediumResolutionSize = cocos2d::Size(1024, 768);
@@ -232,8 +277,7 @@ void HelloWorld::menuCloseCallback(Ref *pSender)
 
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
-    int MovementX = 350;
-    int MovementY = 350;
+
     int ViewRangeX = 30;
     int ViewRangeY = 30;
     int startX = MovementX - ViewRangeX;

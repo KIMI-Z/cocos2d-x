@@ -485,6 +485,7 @@ void MLibrary::draw(int index, PointLib point, Color colour, bool offSet)
     if (mi->Image)
     {
         auto sprite = cocos2d::Sprite::createWithTexture(mi->Image);
+        //  sprite->setAnchorPoint(Vec2(0,0));
         sprite->setPosition(point.x + mi->Width / 2, Settings::ScreenHeight - (point.y + mi->Height / 2));
         sprite->setColor(cocos2d::Color3B(colour.r, colour.g, colour.b));
         sprite->setOpacity(colour.a);
@@ -560,6 +561,7 @@ void MLibrary::draw(int index, cocos2d::Rect section, PointLib point, Color colo
     if (mi->Image)
     {
         auto sprite = cocos2d::Sprite::createWithTexture(mi->Image);
+        // sprite->setAnchorPoint(Vec2(0,1));
         sprite->setTextureRect(section);
         sprite->setPosition(point.x + section.size.width / 2,
                             Settings::ScreenHeight - (point.y + section.size.height / 2));
@@ -603,6 +605,7 @@ void MLibrary::drawUp(int index, int x, int y)
     // ---- 核心绘制部分 ----
     // 方案一：使用 Sprite 绘制（推荐，支持裁剪和锚点）
     auto sprite = Sprite::createWithTexture(mi->Image);
+    // sprite->setAnchorPoint(Vec2(0,1));
     sprite->setAnchorPoint(Vec2::ZERO); // 设置为左下角锚点，匹配原逻辑
     sprite->setPosition(Vec2(x, y));
 
@@ -645,7 +648,8 @@ void MLibrary::drawUpBlend(int index, PointLib point)
 
     // ---- 绘制带混合模式的图片 ----
     auto sprite = Sprite::createWithTexture(mi->Image);
-    sprite->setAnchorPoint(Vec2::ZERO); // 左下角锚点，匹配原逻辑
+    // sprite->setAnchorPoint(0, 0);
+    sprite->setAnchorPoint(Vec2(0,0)); // 左下角锚点，匹配原逻辑
     sprite->setPosition(Vec2(point.x, y));
     sprite->setTextureRect(Rect(0, 0, mi->Width, mi->Height));
 
@@ -695,6 +699,7 @@ void MLibrary::drawBlend(int index, PointLib point, Color colour, bool offSet, f
 
     // ---- 创建 Sprite ----
     auto sprite = Sprite::createWithTexture(mi->Image);
+    // sprite->setAnchorPoint(0, 0);
     sprite->setAnchorPoint(Vec2::ZERO);
     sprite->setPosition(Vec2(point.x, y));
     sprite->setTextureRect(Rect(0, 0, mi->Width, mi->Height));
